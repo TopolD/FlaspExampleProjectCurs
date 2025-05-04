@@ -12,37 +12,27 @@ class BookingDao(BaseDao):
     model = Bookings
 
     @classmethod
-    async def get_booked_rooms(cls, room_id, date_from: date, date_to: date):
-        booked_rooms = select(Bookings).where(
-            and_(
-                Bookings.date_from < date_to,
-                Bookings.date_to > date_from,
-            )
-        )
-        return booked_rooms
-
-    @classmethod
-    async def get_rooms_left(cls, room_id, date_from: date, date_to: date):
+    async def add(cls, room_id, date_from: date, date_to: date, user_id: int):
         async with async_session_maker() as session:
-            booked_rooms = await cls.get_booked_rooms(room_id, date_from, date_to)
+            booked_rooms = select(Bookings).where(
+                and_(
+                    Bookings.date_from < date_to,
+                    Bookings.date_to > date_from,
+                )
+            ).subquery().alias('booked_rooms')
 
             get_rooms_left = select(
                 (Rooms.quantity - func.count(booked_rooms.c.room_id)).label('rooms_left')
-            ).select_from(Rooms).join(
+            ).select_from(Rooms).join(booked_rooms,
                 Rooms.id == booked_rooms.c.room_id, isouter=True
             ).where(Rooms.id == room_id).group_by(
                 Rooms.quantity, booked_rooms.c.room_id
             )
 
-            get_rooms_left = await session.execute(get_rooms_left)
-            get_rooms_left = get_rooms_left.scalar()
 
-        return get_rooms_left
+            rooms_left = await session.execute(get_rooms_left)
+            rooms_left = rooms_left.scalar()
 
-    @classmethod
-    async def add(cls, room_id, date_from: date, date_to: date, user_id: int):
-        async with async_session_maker() as session:
-            rooms_left = await cls.get_rooms_left(room_id, date_from, date_to)
 
             if rooms_left > 0:
                 get_price = select(Rooms.price).filter_by(id=room_id)
@@ -62,3 +52,26 @@ class BookingDao(BaseDao):
 
             else:
                 return None
+
+
+    @classmethod
+    async def get_user_bookings(cls,user_id:int):
+        async with async_session_maker() as session:
+            bookings = select(Bookings,
+                              Rooms.image_id,
+                              Rooms.name,
+                              Rooms.description,
+                              Rooms.services
+                              ).join(Rooms,Rooms.id == Bookings.room_id
+                                     ).where(Bookings.user_id == user_id)
+            bookings = await session.execute(bookings)
+            bookings = bookings.mappings().all()
+            return bookings
+
+
+
+
+    @classmethod
+    async def dell(cls):
+        async with async_session_maker() as session:
+            pass

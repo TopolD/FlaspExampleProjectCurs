@@ -1,5 +1,3 @@
-import logging
-
 import uvicorn
 from fastapi import FastAPI
 from app.bookings.router import router as router_booking

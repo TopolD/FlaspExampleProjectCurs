@@ -9,6 +9,6 @@ router = APIRouter(
 
 
 
-@router.get("/{hotel_id}/rooms")
+@router.get("")
 async def get_rooms():
     return {"message": "Hello from rooms"}
