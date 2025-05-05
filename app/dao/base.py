@@ -32,3 +32,13 @@ class BaseDao:
             query = insert(cls.model).values(**data)
             await session.execute(query)
             await session.commit()
+
+
+    @classmethod
+    async def dell(cls, id):
+        async with async_session_maker() as session:
+            query = select(cls.model).filter_by(id=id)
+            result = await session.execute(query)
+            result = result.scalar_one_or_none()
+            await session.delete(result)
+            await session.commit()
