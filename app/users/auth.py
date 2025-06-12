@@ -6,7 +6,7 @@ from passlib.context import CryptContext
 
 from app.config import settings
 from app.users.dao import UsersDao
-
+from app.logger import log
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -40,7 +40,15 @@ def create_refresh_token(data: dict) -> str:
 
 
 async def authenticate_user(email, password: str):
-    user = await UsersDao.find_one_or_none(email=email)
-    if not user and not verify_password(password, user.password):
-        return None
-    return user
+    try:
+        user = await UsersDao.find_one_or_none(email=email)
+        if not user and not verify_password(password, user.password):
+            return None
+        return user
+    except Exception as e:
+        msg = "User not found"
+        extra = {
+            "email": email,
+        }
+
+        log.error(msg, extra=extra,extra_info=extra)

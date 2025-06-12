@@ -1,6 +1,8 @@
 from app.database import async_session_maker
 from sqlalchemy import select, insert
 
+from app.logger import log
+
 
 class BaseDao:
     model = None
@@ -24,21 +26,16 @@ class BaseDao:
         async with async_session_maker() as session:
             query = select(cls.model).filter_by(**filter_by)
             result = await session.execute(query)
-            return  result.scalar_one_or_none()
+            return result.scalar_one_or_none()
 
     @classmethod
     async def add(cls, **data):
-        async with async_session_maker() as session:
-            query = insert(cls.model).values(**data)
-            await session.execute(query)
-            await session.commit()
+        try:
+            async with async_session_maker() as session:
+                query = insert(cls.model).values(**data)
+                await session.execute(query)
+                await session.commit()
+        except Exception as e:
+            msg = f"{e}, Failed to add data  in model: {cls.model}"
+            log.error(msg)
 
-
-    @classmethod
-    async def dell(cls, id):
-        async with async_session_maker() as session:
-            query = select(cls.model).filter_by(id=id)
-            result = await session.execute(query)
-            result = result.scalar_one_or_none()
-            await session.delete(result)
-            await session.commit()
