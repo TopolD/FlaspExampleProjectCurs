@@ -4,8 +4,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    MODE :Literal["DEV", "TEST","PROD"]
-    LOG_LEVEL :Literal["DEBUG","INFO","WARNING","ERROR","CRITICAL"]
+    MODE: Literal["DEV", "TEST", "PROD"]
+    LOG_LEVEL_APP: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 
     DB_HOST: str
     DB_PORT: int
@@ -27,8 +27,6 @@ class Settings(BaseSettings):
     def TEST_DATABASE_URL(self):
         return f"postgresql+asyncpg://{self.TEST_DB_USER}:{self.TEST_DB_PASS}@{self.TEST_DB_HOST}:{self.TEST_DB_PORT}/{self.TEST_DB_NAME}"
 
-
-
     SECRET_KEY_ACCESS: str
     SECRET_KEY_REFRESH: str
     ALGORITHM: str
@@ -44,12 +42,10 @@ class Settings(BaseSettings):
     REDIS_HOST: str
     REDIS_PORT: int
 
-    UPSTASH_REDIS_REST_URL: str
-    UPSTASH_REDIS_REST_TOKEN: str
+    UPSTASH_REDIS_URL: str
 
 
     model_config = SettingsConfigDict(env_file=".env")
-
 
 
 settings = Settings()

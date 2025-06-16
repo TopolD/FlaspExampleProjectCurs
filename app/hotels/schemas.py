@@ -22,3 +22,9 @@ class SNewHotels(BaseModel):
     image_id: int
 
 
+class SHotelsInfo(BaseModel):
+    name: str
+    location: str
+    services: List[str]
+    rooms_quantity: int
+    image_id: int
